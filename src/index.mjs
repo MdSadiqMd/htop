@@ -16,7 +16,7 @@ function App(props) {
   `;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+/* document.addEventListener("DOMContentLoaded", () => {
     setInterval(async () => {
         let response = await fetch('/htop');
         if (response.status !== 200) {
@@ -27,4 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const app = h("pre", null, JSON.stringify(result, null, 2));
         render(html`<${App} cpus=${result}></${App}>`, document.body);
     }, 1000);
-});
+}); */
+
+let url = new URL("/realtime/cpus", window.location.href);
+url.protocol = url.protocol.replace("http", "ws");
+
+let ws = new WebSocket(url.href);
+ws.onmessage = (ev) => {
+    let json = JSON.parse(ev.data);
+    render(html`<${App} cpus=${json}></${App}>`, document.body);
+};
