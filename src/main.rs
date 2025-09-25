@@ -1,4 +1,4 @@
-use axum::{Router, extract::State, routing::get};
+use axum::{Json, Router, extract::State, response::IntoResponse, routing::get};
 use std::sync::{Arc, Mutex};
 use sysinfo::System;
 use tokio::net::TcpListener;
@@ -20,18 +20,10 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn sys_info(State(state): State<AppState>) -> String {
-    use ::std::fmt::Write;
-
-    let mut s = String::new();
+async fn sys_info(State(state): State<AppState>) -> impl IntoResponse {
     let mut sys = state.sys.lock().unwrap();
     sys.refresh_cpu_all();
 
-    for (i, cpus) in sys.cpus().iter().enumerate() {
-        let i = i + 1;
-        let usage = cpus.cpu_usage();
-        writeln!(&mut s, "CPU {i} {usage}%").unwrap();
-    }
-
-    s
+    let v: Vec<_> = sys.cpus().iter().map(|cpu| cpu.cpu_usage()).collect();
+    Json(v)
 }
