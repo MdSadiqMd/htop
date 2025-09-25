@@ -1,4 +1,10 @@
-use axum::{Json, Router, extract::State, response::IntoResponse, routing::get};
+use axum::{
+    Json, Router,
+    extract::State,
+    http::Response,
+    response::{Html, IntoResponse},
+    routing::get,
+};
 use std::sync::{Arc, Mutex};
 use sysinfo::System;
 use tokio::net::TcpListener;
@@ -12,12 +18,29 @@ struct AppState {
 async fn main() {
     let app = Router::new()
         .route("/healthz", get(|| async { "up" }))
-        .route("/", get(sys_info))
+        .route("/", get(root_get))
+        .route("/index.mjs", get(indexmjs_get))
+        .route("/htop", get(sys_info))
         .with_state(AppState {
             sys: Arc::new(Mutex::new(System::new())),
         });
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+#[axum::debug_handler]
+async fn root_get() -> impl IntoResponse {
+    let markup = tokio::fs::read_to_string("src/index.html").await.unwrap();
+    Html(markup)
+}
+
+#[axum::debug_handler]
+async fn indexmjs_get() -> impl IntoResponse {
+    let markup = tokio::fs::read_to_string("src/index.js").await.unwrap();
+    Response::builder()
+        .header("content-type", "application/javascript;charset=utf-8")
+        .body(markup)
+        .unwrap()
 }
 
 async fn sys_info(State(state): State<AppState>) -> impl IntoResponse {
