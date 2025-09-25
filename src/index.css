@@ -1,47 +1,198 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap");
 
 * {
-    font-family: "Roboto", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    background: #0f0f0f;
+    font-family: "Roboto", sans-serif;
+    background: #0a0a0a;
+    color: #ffffff;
+    min-height: 100vh;
+    padding: 20px;
 }
 
-.bar {
-    background: #264653;
-    color: white;
+.app {
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-    width: 20em;
-    height: 2em;
-    margin: .5em;
+.app h1 {
+    text-align: center;
+    color: #ffffff;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
 
+.cpu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 0 10px;
+}
+
+.cpu-container {
+    background: linear-gradient(145deg, #1a1a1a, #141414);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid #2a2a2a;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cpu-container:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.cpu-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-
-    position: relative;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
 }
 
-.bar label {
+.cpu-header h3 {
+    font-family: "Roboto Mono", monospace;
+    font-size: 1.2rem;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.cpu-usage {
+    font-family: "Roboto Mono", monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-shadow: 0 0 10px currentColor;
+}
+
+.cpu-graph {
+    background: #111111;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #2a2a2a;
+    overflow: hidden;
+}
+
+.cpu-graph svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.usage-bar {
+    position: relative;
+    height: 25px;
+    background: #222222;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #333;
+}
+
+.usage-bar-fill {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.3s ease;
+    position: relative;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.usage-bar-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     z-index: 10;
 }
 
-.bar .bar-inner {
-    z-index: 5;
+/* Responsive design */
+@media (max-width: 768px) {
+    .cpu-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
 
-    height: 100%;
+    .app h1 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
 
-    background: #2A9D8F;
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
+    .cpu-container {
+        padding: 15px;
+    }
 
-    transition: width 0.2s;
+    .cpu-graph {
+        padding: 8px;
+    }
 }
 
-.bar,
-.bar-inner {
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .app h1 {
+        font-size: 1.5rem;
+    }
+
+    .cpu-header h3 {
+        font-size: 1rem;
+    }
+
+    .cpu-usage {
+        font-size: 1.2rem;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.cpu-container.loading {
+    animation: pulse 2s infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
     border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #444;
 }

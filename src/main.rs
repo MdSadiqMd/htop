@@ -8,16 +8,27 @@ use axum::{
     response::{Html, IntoResponse},
     routing::get,
 };
+use serde::Serialize;
+use std::collections::VecDeque;
 use sysinfo::System;
 use tokio::net::TcpListener;
 use tokio::sync::broadcast;
 
-type Snapshot = Vec<f32>;
+#[derive(Clone, Serialize)]
+struct CpuData {
+    core_id: usize,
+    usage: f32,
+    history: VecDeque<f32>,
+}
+
+type Snapshot = Vec<CpuData>;
 
 #[derive(Clone)]
 struct AppState {
     tx: broadcast::Sender<Snapshot>,
 }
+
+const HISTORY_SIZE: usize = 50;
 
 #[tokio::main]
 async fn main() {
@@ -35,10 +46,34 @@ async fn main() {
 
     tokio::task::spawn_blocking(move || {
         let mut sys = System::new();
+        let mut cpu_histories: Vec<VecDeque<f32>> = Vec::new();
+
         loop {
             sys.refresh_cpu_usage();
-            let v: Vec<_> = sys.cpus().iter().map(|cpu| cpu.cpu_usage()).collect();
-            let _ = tx.send(v);
+            let cpus = sys.cpus();
+
+            if cpu_histories.len() != cpus.len() {
+                cpu_histories = vec![VecDeque::with_capacity(HISTORY_SIZE); cpus.len()];
+            }
+
+            let mut snapshot = Vec::new();
+
+            for (i, cpu) in cpus.iter().enumerate() {
+                let usage = cpu.cpu_usage();
+
+                cpu_histories[i].push_back(usage);
+                if cpu_histories[i].len() > HISTORY_SIZE {
+                    cpu_histories[i].pop_front();
+                }
+
+                snapshot.push(CpuData {
+                    core_id: i,
+                    usage,
+                    history: cpu_histories[i].clone(),
+                });
+            }
+
+            let _ = tx.send(snapshot);
             std::thread::sleep(std::time::Duration::from_millis(250));
         }
     });
